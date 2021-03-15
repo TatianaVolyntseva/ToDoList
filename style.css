@@ -1,0 +1,47 @@
+.body{
+  display: flex;
+
+}
+.main{
+  width: 500px;
+  margin: 0 auto;
+  margin-top: 50px;
+  text-align: center;
+  vertical-align: middle;
+  border: 1px solid black;
+  border-radius: 6px;
+  padding-bottom: 15px;
+}
+
+.divMini{
+  /* border: 1px solid purple;
+  } */
+
+  margin-top: 30px;}
+
+.divforOut{
+  /* border: 1px solid green;  */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+}
+
+.divforOut p {
+  margin-left: 10px;
+}
+
+.text{
+  font-size: 18px;
+}
+
+.textDone{
+  text-decoration: line-through;
+  color: grey;
+}
+
+.imageEdit{
+width: 15px;
+height: 15px;
+margin-left: 10px;
+}
