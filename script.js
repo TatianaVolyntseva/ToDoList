@@ -4,8 +4,10 @@ let InputValue = "";
 let isCheck;
 let input;
 let task;
+let flagEdit;
 
 
+// console.log(Boolean(flagEdit))
 
 window.onload = function() {
 
@@ -49,7 +51,6 @@ onClickButton = () => {
     AllTasks.push({
       task: InputValue,
       isCheck: false,
-      isEdit: false,
     });
     // console.log(AllTasks)
     InputValue = "";
@@ -60,25 +61,21 @@ onClickButton = () => {
   
 }
 
-
-
 render = () => {
 
-
- 
   while (divMini.firstChild){
     divMini.firstChild.remove();
   }
 
   AllTasks.map((item, index) => {
-
+    
     let divForOut = document.createElement("div");
     divForOut.className = "divforOut";
     divMini.appendChild(divForOut);
     divForOut.id = `task_${index}`;
 
 
-    if(!item.isEdit){// убираем чекбокс, если редактируем инпут
+    if(flagEdit !== index){// убираем чекбокс, если редактируем инпут
       checkBox = document.createElement("input");
       checkBox.type = "checkbox";
       divForOut.appendChild(checkBox);
@@ -87,7 +84,7 @@ render = () => {
     }
    
     
-    if (!item.isEdit){// создаем <p>, если не редактируем
+    if (flagEdit !== index){// создаем <p>, если не редактируем
       task = document.createElement("p");
       task.innerHTML = item.task;
       task.className = item.isCheck? "textDone" : "text";
@@ -106,7 +103,7 @@ render = () => {
       imgDone.addEventListener("click", function () {doneTaskEdit(item, index)});
     }
     //картинка для редактирования
-    if(!item.isEdit){
+    if(flagEdit !== index){
       let imageEdit = document.createElement("img");
       imageEdit.src = "img/edit.svg";
       imageEdit.className = "imageEdit";
@@ -115,7 +112,6 @@ render = () => {
       imageEdit.addEventListener("click", function () { onClickImageEdit(index)});
     }
     
-   
     //картинка для удаления
     let imageDelete = document.createElement("img");
     imageDelete.src = "img/delete.svg";
@@ -123,34 +119,32 @@ render = () => {
     divForOut.appendChild(imageDelete);
     imageDelete.addEventListener("click", function () { onClickImageDelete(index)});
 
-   
   })
 
 }
 
 onClickImageEdit = (index) => {
 
-  AllTasks[index].isEdit = !AllTasks[index].isEdit;
+  flagEdit = index;
   localStorage.setItem("AllTasks", JSON.stringify(AllTasks));
   render();
-
 }
 
 
 doneTaskEdit = (item, index) => {
 
   if(taskEdit.value){
-   
     InputValue = taskEdit.value;
     AllTasks[index].task = InputValue;
     InputValue = "";
-    AllTasks[index].isEdit = !AllTasks[index].isEdit;
+    flagEdit = !flagEdit;
     localStorage.setItem("AllTasks", JSON.stringify(AllTasks));
     render();
+   
   }else{
     AllTasks[index].task = item.task;
     InputValue = "";
-    AllTasks[index].isEdit = !AllTasks[index].isEdit;
+    flagEdit = !flagEdit;
     localStorage.setItem("AllTasks", JSON.stringify(AllTasks));
     render();
   }
