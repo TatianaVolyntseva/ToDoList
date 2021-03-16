@@ -1,6 +1,5 @@
 .body{
   display: flex;
-
 }
 .main{
   width: 500px;
@@ -11,6 +10,8 @@
   border: 1px solid black;
   border-radius: 6px;
   padding-bottom: 15px;
+  background-color: aquamarine;
+  opacity: 0.7;
 }
 
 .divMini{
