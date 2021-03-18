@@ -3,13 +3,10 @@ let AllTasks = JSON.parse(localStorage.getItem("AllTasks"))|| [];
 let InputValue = "";
 let isCheck;
 let input;
-let task;
+let text;
 let flagEdit;
 
-
-// console.log(Boolean(flagEdit))
-
-window.onload = function() {
+window.onload = async function() {
 
   input = document.getElementById("into");
   input.addEventListener("change", inputChange);
@@ -29,13 +26,21 @@ window.onload = function() {
     removeAll.innerHTML = "Delete all Tasks";
     divMain.appendChild(removeAll);
     removeAll.addEventListener("click", onClickDeleteAll);
+  }else{
+
   }
+  
+  let resp = await fetch("http://localhost:8000/allTasks", {metod: "GET"});
+  let result = await resp.json();
+  AllTasks = result.data;
+  console.log("загрузка с сервера", result.data);
+  
 
  render()
   
 };
 
-inputChange = (e) => {
+inputChange = async (e) => {
   InputValue = e.target.value;
 }
 
@@ -46,16 +51,34 @@ keyDownSave = (e) => {
   }
 }
 
-onClickButton = () => {
+//добавление нового задания связала с сервером:
+onClickButton = async () => {
   if (Boolean(InputValue)) {
     AllTasks.push({
-      task: InputValue,
+      text: InputValue,
       isCheck: false,
     });
-    // console.log(AllTasks)
+    
+    const resp = await fetch("http://localhost:8000/createTask", {
+      method: "POST",
+      headers: {
+        "Content-type":"application/json;charset=utf-8",
+        'Access-Control-Allow-Origin': "*"
+      },
+      body: JSON.stringify({
+        text: InputValue,
+        isCheck: false,
+      })
+    });
+
+    let result = await resp.json();
+    console.log("загрузка на сервер", result.data)
+    AllTasks = result.data;
+
+    localStorage.setItem("AllTasks", JSON.stringify(AllTasks));  
     InputValue = "";
     input.value = "";
-    localStorage.setItem("AllTasks", JSON.stringify(AllTasks));    
+     
     render();
   }
   
@@ -68,7 +91,7 @@ render = () => {
   }
 
   AllTasks.map((item, index) => {
-    
+        
     let divForOut = document.createElement("div");
     divForOut.className = "divforOut";
     divMini.appendChild(divForOut);
@@ -85,14 +108,14 @@ render = () => {
    
     
     if (flagEdit !== index){// создаем <p>, если не редактируем
-      task = document.createElement("p");
-      task.innerHTML = item.task;
-      task.className = item.isCheck? "textDone" : "text";
-      divForOut.appendChild(task);
+      text = document.createElement("p");
+      text.innerHTML = item.text;
+      text.className = item.isCheck? "textDone" : "text";
+      divForOut.appendChild(text);
     } else{//создаем <input> куда вложим новое значение 
       //вешаем на инпут функцию что делать, когда отредактировали
       taskEdit = document.createElement("input");
-      taskEdit.value = item.task;
+      taskEdit.value = item.text;
       divForOut.appendChild(taskEdit);
       taskEdit.addEventListener("change", function () {doneTaskEdit(item, index)});
 
@@ -130,19 +153,36 @@ onClickImageEdit = (index) => {
   render();
 }
 
-
-doneTaskEdit = (item, index) => {
+//изменение Задания связала с сервером
+doneTaskEdit = async (item, index) => {
 
   if(taskEdit.value){
+
     InputValue = taskEdit.value;
-    AllTasks[index].task = InputValue;
+    AllTasks[index].text = InputValue;
+
+    let resp = await fetch(`http://localhost:8000/updateTask?=${AllTasks[index].id}`, {
+    method: "PATCH", 
+    headers: {
+      "Content-type":"application/json;charset=utf-8",
+      'Access-Control-Allow-Origin': "*"
+    },
+    body: JSON.stringify({
+      id: AllTasks[index].id,
+      text: taskEdit.value,
+    })
+  });
+  let result = await resp.json();
+  AllTasks = result.data;
+
+
     InputValue = "";
     flagEdit = !flagEdit;
     localStorage.setItem("AllTasks", JSON.stringify(AllTasks));
     render();
    
   }else{
-    AllTasks[index].task = item.task;
+    AllTasks[index].text = item.text;
     InputValue = "";
     flagEdit = !flagEdit;
     localStorage.setItem("AllTasks", JSON.stringify(AllTasks));
@@ -151,25 +191,100 @@ doneTaskEdit = (item, index) => {
   
 }
 
-onClickCheckBox = (index) => {
+//изменение Чексбокса связала с сервером
+onClickCheckBox = async (index) => {
+
   AllTasks[index].isCheck = !AllTasks[index].isCheck; 
   localStorage.setItem("AllTasks", JSON.stringify(AllTasks));
+
+  let resp = await fetch(`http://localhost:8000/updateTask?=${AllTasks[index].id}`, {
+    method: "PATCH", 
+    headers: {
+      "Content-type":"application/json;charset=utf-8",
+      'Access-Control-Allow-Origin': "*"
+    },
+    body: JSON.stringify({
+      id: AllTasks[index].id,
+      isCheck: AllTasks[index].isCheck,
+    })
+
+
+  });
+  let result = await resp.json();
+  AllTasks = result.data;
+  console.log("загрузка с сервера", result.data);
+
+ 
+  
   render();
 }
 
-onClickImageDelete = (index) => {
+//удаление 1 задания связала с сервером:
+onClickImageDelete = async (index) => {
+ 
+  
+  const resp = await fetch(`http://localhost:8000/deleteTask?id=${AllTasks[index].id}`, {
+      method: "DELETE",
+  });
+
+  let result = await resp.json();
+  console.log("после удаления на сервере",result.data);
   
   AllTasks.splice(index,1);
+
   localStorage.setItem("AllTasks", JSON.stringify(AllTasks));
   let t = document.getElementById(`task_${index}`)
+
   t.remove();
   render();
+  
+  console.log("чпок")
 }
 
+//удаление ВСЕХ заданий связала с сервером:
 onClickDeleteAll = () =>{
 
+  console.log(AllTasks);
+ 
+  AllTasks.map( async (item, index) => {
+
+    const resp = await fetch(`http://localhost:8000/deleteTask?id=${item.id}`, {
+      method: "DELETE",
+      });
+      let result = await resp.json();
+      console.log(result.data)
+  });
+
   AllTasks = [];
-  console.log( AllTasks);
   localStorage.removeItem("AllTasks");
   render();
-}
+};
+
+
+// const momHappy = true;
+// // const momHappy = false;
+// const phone = {
+//   model: "Samsung",
+//   color: "red",
+// }
+// // console.log(phone)
+// const promise = new Promise((resolve, reject) => {
+//     if(momHappy){
+//       resolve(phone);
+//     } else {
+//       err = new Error("not phone");
+//       reject(err);
+//     }
+// });
+
+// askMom = () =>{
+//   promise.then(result => changePhone(phone), error => console.log(error));
+// }
+
+
+// changePhone = (obj) =>{
+//   obj.color = "blue";
+//   console.log(obj);
+// }
+
+// askMom();
