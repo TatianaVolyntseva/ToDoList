@@ -69,11 +69,15 @@ onClickButton = async () => {
         text: InputValue,
         isCheck: false,
       })
+      
     });
-
+   
     let result = await resp.json();
-    console.log("загрузка на сервер", result.data)
+    console.log("загрузка на сервер", result);
     AllTasks = result.data;
+    console.log(AllTasks);
+    
+    console.log(result.data)
 
     localStorage.setItem("AllTasks", JSON.stringify(AllTasks));  
     InputValue = "";
@@ -161,14 +165,14 @@ doneTaskEdit = async (item, index) => {
     InputValue = taskEdit.value;
     AllTasks[index].text = InputValue;
 
-    let resp = await fetch(`http://localhost:8000/updateTask?=${AllTasks[index].id}`, {
+    let resp = await fetch(`http://localhost:8000/updateTask?=${AllTasks[index]._id}`, {
     method: "PATCH", 
     headers: {
       "Content-type":"application/json;charset=utf-8",
       'Access-Control-Allow-Origin': "*"
     },
     body: JSON.stringify({
-      id: AllTasks[index].id,
+      _id: AllTasks[index]._id,
       text: taskEdit.value,
     })
   });
@@ -197,14 +201,14 @@ onClickCheckBox = async (index) => {
   AllTasks[index].isCheck = !AllTasks[index].isCheck; 
   localStorage.setItem("AllTasks", JSON.stringify(AllTasks));
 
-  let resp = await fetch(`http://localhost:8000/updateTask?=${AllTasks[index].id}`, {
+  let resp = await fetch(`http://localhost:8000/updateTask?=${AllTasks[index]._id}`, {
     method: "PATCH", 
     headers: {
       "Content-type":"application/json;charset=utf-8",
       'Access-Control-Allow-Origin': "*"
     },
     body: JSON.stringify({
-      id: AllTasks[index].id,
+      _id: AllTasks[index]._id,
       isCheck: AllTasks[index].isCheck,
     })
 
@@ -213,19 +217,18 @@ onClickCheckBox = async (index) => {
   let result = await resp.json();
   AllTasks = result.data;
   console.log("загрузка с сервера", result.data);
-
- 
   
   render();
 }
 
-//удаление 1 задания связала с сервером:
+//удаление 1 задания связала с сервером и Базой Данных:
 onClickImageDelete = async (index) => {
  
-  
-  const resp = await fetch(`http://localhost:8000/deleteTask?id=${AllTasks[index].id}`, {
+  console.log(AllTasks[index]._id)
+  const resp = await fetch(`http://localhost:8000/deleteTask?_id=${AllTasks[index]._id}`, {
       method: "DELETE",
   });
+
 
   let result = await resp.json();
   console.log("после удаления на сервере",result.data);
@@ -248,7 +251,7 @@ onClickDeleteAll = () =>{
  
   AllTasks.map( async (item, index) => {
 
-    const resp = await fetch(`http://localhost:8000/deleteTask?id=${item.id}`, {
+    const resp = await fetch(`http://localhost:8000/deleteTask?_id=${item._id}`, {
       method: "DELETE",
       });
       let result = await resp.json();
@@ -260,31 +263,3 @@ onClickDeleteAll = () =>{
   render();
 };
 
-
-// const momHappy = true;
-// // const momHappy = false;
-// const phone = {
-//   model: "Samsung",
-//   color: "red",
-// }
-// // console.log(phone)
-// const promise = new Promise((resolve, reject) => {
-//     if(momHappy){
-//       resolve(phone);
-//     } else {
-//       err = new Error("not phone");
-//       reject(err);
-//     }
-// });
-
-// askMom = () =>{
-//   promise.then(result => changePhone(phone), error => console.log(error));
-// }
-
-
-// changePhone = (obj) =>{
-//   obj.color = "blue";
-//   console.log(obj);
-// }
-
-// askMom();
